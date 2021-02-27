@@ -1,6 +1,5 @@
-package com.hardy.practice.router
+package com.hardy.practice.book
 
-import com.hardy.practice.handler.BookHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.RouterFunction

@@ -1,4 +1,4 @@
-package com.hardy.practice.controller
+package com.hardy.practice.book
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController

@@ -1,6 +1,5 @@
-package com.hardy.practice.handler
+package com.hardy.practice.book
 
-import com.hardy.practice.domain.Book
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest

@@ -1,4 +1,4 @@
-package com.hardy.practice.domain
+package com.hardy.practice.book
 
 /**
  * 설명 : N/A

@@ -8,8 +8,8 @@ import org.springframework.web.reactive.function.server.ServerResponse.notFound
 import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import java.time.LocalDateTime
-import java.util.*
 
 /**
  * 설명 : N/A
@@ -25,14 +25,14 @@ class TodoHandler(private val todoRepository: TodoRepository) {
         return ServerResponse.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(Flux.just(todoRepository.findAll()))
-            .switchIfEmpty(notFound().build())
+            .switchIfEmpty { notFound().build() }
     }
 
     fun getById(serverRequest: ServerRequest): Mono<ServerResponse> {
         return ServerResponse.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(Mono.just(todoRepository.findById(serverRequest.pathVariable("id").toLong())))
-            .switchIfEmpty(notFound().build())
+            .switchIfEmpty { notFound().build() }
     }
 
     fun save(serverRequest: ServerRequest): Mono<ServerResponse> {
@@ -40,29 +40,30 @@ class TodoHandler(private val todoRepository: TodoRepository) {
             .contentType(MediaType.APPLICATION_JSON)
             .body(
                 serverRequest.bodyToMono(Todo::class.java)
-                    .switchIfEmpty(Mono.empty())
-                    .filter(Objects::nonNull)
-                    .flatMap { todo ->
-                        Mono.fromCallable { todoRepository.save(todo) }.then(Mono.just(todo))
+                    .switchIfEmpty { Mono.empty() }
+                    .let {
+                        it.flatMap { todo ->
+                            Mono.fromCallable { todoRepository.save(todo) }.then(Mono.just(todo))
+                        }
                     }
-            ).switchIfEmpty(notFound().build())
+            ).switchIfEmpty { notFound().build() }
     }
 
-    fun done(sererRequest: ServerRequest): Mono<ServerResponse> {
+    fun done(serverRequest: ServerRequest): Mono<ServerResponse> {
         return ServerResponse.ok()
-            .contentType(MediaType.APPLICATION_JSON)
             .body(
-                Mono.justOrEmpty(todoRepository.findById(sererRequest.pathVariable("id").toLong()))
-                    .switchIfEmpty(Mono.empty())
-                    .filter(Objects::nonNull)
-                    .flatMap { todo ->
-                        Mono.fromCallable {
-                            todo.done = true
-                            todo.modifiedAt = LocalDateTime.now()
-                            todoRepository.save(todo)
-                        }.then(Mono.just(todo))
+                Mono.justOrEmpty(todoRepository.findById(serverRequest.pathVariable("id").toLong()))
+                    .switchIfEmpty { Mono.empty() }
+                    .let {
+                        it.flatMap { todo ->
+                            Mono.fromCallable {
+                                todo.done = true
+                                todo.modifiedAt = LocalDateTime.now()
+                                todoRepository.save(todo)
+                            }.then(Mono.just(todo))
+                        }
                     }
-            ).switchIfEmpty(notFound().build())
+            ).switchIfEmpty { notFound().build() }
     }
 
     fun remove(serverRequest: ServerRequest): Mono<ServerResponse> {
@@ -70,12 +71,13 @@ class TodoHandler(private val todoRepository: TodoRepository) {
             .contentType(MediaType.APPLICATION_JSON)
             .body(
                 Mono.justOrEmpty(todoRepository.findById(serverRequest.pathVariable("id").toLong()))
-                    .switchIfEmpty(Mono.empty())
-                    .filter(Objects::nonNull)
-                    .flatMap { todo ->
-                        Mono.fromCallable { todoRepository.delete(todo) }.then(Mono.just(todo))
+                    .switchIfEmpty { Mono.empty() }
+                    .let {
+                        it.flatMap { todo ->
+                            Mono.fromCallable { todoRepository.delete(todo) }.then(Mono.just(todo))
+                        }
                     }
-            ).switchIfEmpty(notFound().build())
+            ).switchIfEmpty { notFound().build() }
     }
 
 }
